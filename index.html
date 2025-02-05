@@ -33,6 +33,9 @@
             </thead>
             <tbody id="expense-list"></tbody>
         </table>
+        <h2 class="text-xl font-bold mt-6">สรุปค่าใช้จ่าย</h2>
+        <p id="daily-summary" class="mt-2 font-semibold"></p>
+        <p id="monthly-summary" class="mt-2 font-semibold"></p>
     </div>
     
     <script>
@@ -44,7 +47,7 @@
             let date = document.getElementById("date").value;
             if (!title || !amount || !date) return alert("กรุณากรอกข้อมูลให้ครบ");
             let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-            expenses.push({ id: Date.now(), title, amount, category, date });
+            expenses.push({ id: Date.now(), title, amount: parseFloat(amount), category, date });
             localStorage.setItem("expenses", JSON.stringify(expenses));
             document.getElementById("expense-form").reset();
             loadExpenses();
@@ -53,7 +56,13 @@
             let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
             let list = document.getElementById("expense-list");
             list.innerHTML = "";
+            let dailyTotal = {};
+            let monthlyTotal = {};
             expenses.forEach((exp, index) => {
+                let date = exp.date;
+                let month = date.slice(0, 7);
+                dailyTotal[date] = (dailyTotal[date] || 0) + exp.amount;
+                monthlyTotal[month] = (monthlyTotal[month] || 0) + exp.amount;
                 let row = `<tr class='border'>
                     <td class='p-2'>${exp.title}</td>
                     <td class='p-2'>${exp.amount}</td>
@@ -63,6 +72,8 @@
                 </tr>`;
                 list.innerHTML += row;
             });
+            document.getElementById("daily-summary").innerText = `ยอดรวมรายวัน: ${JSON.stringify(dailyTotal)}`;
+            document.getElementById("monthly-summary").innerText = `ยอดรวมรายเดือน: ${JSON.stringify(monthlyTotal)}`;
         }
         function deleteExpense(index) {
             let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
